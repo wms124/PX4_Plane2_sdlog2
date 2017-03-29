@@ -625,6 +625,191 @@ struct log_LOAD_s {
 	float cpu_load;
 };
 
+/* --- dstone debug:save_rom_var  --- */
+/* --- LOG VAR MSG Part 1 --- */
+#define LOG_VAR1_MSG 62
+struct log_VAR1_s {
+//        int32_t os_time;
+//        int32_t monitor_status_a;
+//        int32_t monitor_status_b;
+//        int32_t ekf_pos_x;
+//        int32_t ekf_pos_y;
+//        int32_t ekf_pos_z;
+//        int32_t ekf_vel_x;
+//        int32_t ekf_vel_y;
+//        int32_t ekf_vel_z;
+    int os_time;
+    int monitor_status_a;
+    int monitor_status_b;
+    int ekf_pos_x;
+    int ekf_pos_y;
+    int ekf_pos_z;
+    int ekf_vel_x;
+    int ekf_vel_y;
+    int ekf_vel_z;
+};
+
+/* --- LOG VAR MSG Part 2 --- */
+#define LOG_VAR2_MSG 63
+struct log_VAR2_s {
+//        int32_t ekf_acc_x;//int32_t
+//        int32_t ekf_acc_y;
+//        int32_t ekf_acc_z;
+//        int32_t ekf_rpy_x;  //att angle
+//        int32_t ekf_rpy_y;
+//        int32_t ekf_rpy_z;
+//        int32_t ekf_pqr_x;  //att angle rate
+//        int32_t ekf_pqr_y;
+//        int32_t ekf_pqr_z;
+    int ekf_acc_x;//int32_t
+    int ekf_acc_y;
+    int ekf_acc_z;
+    int ekf_rpy_x;  //att angle
+    int ekf_rpy_y;
+    int ekf_rpy_z;
+    int ekf_pqr_x;  //att angle rate
+    int ekf_pqr_y;
+    int ekf_pqr_z;
+};
+
+/* --- LOG VAR MSG Part 3 --- */
+#define LOG_VAR3_MSG 64
+struct log_VAR3_s {
+//        int32_t guidance_ref_1; //Unrelated
+//        int32_t guidance_ref_2;
+//        int32_t guidance_ref_3;
+//        int32_t guidance_ref_4;
+//        int32_t guidance_ref_5;
+//        int32_t guidance_ref_6;
+//        int32_t guidance_ref_7;
+//        int32_t guidance_ref_8;
+    int guidance_ref_1; //Unrelated
+    int guidance_ref_2;
+    int guidance_ref_3;
+    int guidance_ref_4;
+    int guidance_ref_5;
+    int guidance_ref_6;
+    int guidance_ref_7;
+    int guidance_ref_8;
+};
+
+/* --- LOG VAR MSG Part 4 --- */
+#define LOG_VAR4_MSG 65
+struct log_VAR4_s {
+//        int32_t rc_in_roll;//int32_t
+//        int32_t rc_in_pitch;
+//        int32_t rc_in_thr;
+//        int32_t rc_in_yaw;
+
+//        int32_t pwm_12; //PWM channel
+//        int32_t pwm_34;
+//        int32_t pwm_56;
+//        int32_t pwm_78;
+    int rc_in_roll;//int32_t
+    int rc_in_pitch;
+    int rc_in_thr;
+    int rc_in_yaw;
+
+    int pwm_12; //PWM channel
+    int pwm_34;
+    int pwm_56;
+    int pwm_78;
+};
+
+/* --- LOG VAR MSG Part 5 --- */
+#define LOG_VAR5_MSG 66
+struct log_VAR5_s {
+//        int32_t throttle;//int32_t
+
+//        int32_t rotor_frequency;    //Unrelated
+
+//        int32_t press_altitude;
+
+//        int32_t gps_pos_x;  //GPS original data
+//        int32_t gps_pos_y;
+//        int32_t gps_pos_z;
+
+//        int32_t mag_x;
+//        int32_t mag_y;
+//        int32_t mag_z;
+
+//        int32_t yaw_angle;
+    int throttle;//int32_t
+
+    int rotor_frequency;    //Unrelated
+
+    int press_altitude;
+
+    int gps_pos_x;  //GPS original data
+    int gps_pos_y;
+    int gps_pos_z;
+
+    int mag_x;
+    int mag_y;
+    int mag_z;
+
+    int yaw_angle;
+};
+
+/* --- LOG VAR MSG  --- */
+#define LOG_VAR6_MSG 67
+struct log_VAR6_s {
+    int os_time;
+    int monitor_status_a;
+    int monitor_status_b;
+    int ekf_pos_x;
+    int ekf_pos_y;
+    int ekf_pos_z;
+    int ekf_vel_x;
+    int ekf_vel_y;
+    int ekf_vel_z;
+
+    int ekf_acc_x;//int32_t
+    int ekf_acc_y;
+    int ekf_acc_z;
+    int ekf_rpy_x;  //att angle
+    int ekf_rpy_y;
+    int ekf_rpy_z;
+    int ekf_pqr_x;  //att angle rate
+    int ekf_pqr_y;
+    int ekf_pqr_z;
+
+    int guidance_ref_1; //Unrelated
+    int guidance_ref_2;
+    int guidance_ref_3;
+    int guidance_ref_4;
+    int guidance_ref_5;
+    int guidance_ref_6;
+    int guidance_ref_7;
+    int guidance_ref_8;
+
+    int rc_in_roll;//int32_t
+    int rc_in_pitch;
+    int rc_in_thr;
+    int rc_in_yaw;
+
+    int pwm_12; //PWM channel
+    int pwm_34;
+    int pwm_56;
+    int pwm_78;
+
+    int throttle;//int32_t
+
+    int rotor_frequency;    //Unrelated
+
+    int press_altitude;
+
+    int gps_pos_x;  //GPS original data
+    int gps_pos_y;
+    int gps_pos_z;
+
+    int mag_x;
+    int mag_y;
+    int mag_z;
+
+    int yaw_angle;
+};
+
 /********** SYSTEM MESSAGES, ID > 0x80 **********/
 
 /* --- TIME - TIME STAMP --- */
@@ -654,71 +839,78 @@ struct log_PARM_s {
 /* construct list of all message formats */
 static const struct log_format_s log_formats[] = {
 	/* business-level messages, ID < 0x80 */
-	LOG_FORMAT(ATT, "fffffffffffff",	"qw,qx,qy,qz,Roll,Pitch,Yaw,RollRate,PitchRate,YawRate,GX,GY,GZ"),
-	LOG_FORMAT(ATSP, "ffffffff",		"RollSP,PitchSP,YawSP,ThrustSP,qw,qx,qy,qz"),
-	LOG_FORMAT_S(IMU, IMU, "ffffffffffff",		"AccX,AccY,AccZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,tA,tG,tM"),
-	LOG_FORMAT_S(IMU1, IMU, "ffffffffffff",		"AccX,AccY,AccZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,tA,tG,tM"),
-	LOG_FORMAT_S(IMU2, IMU, "ffffffffffff",		"AccX,AccY,AccZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,tA,tG,tM"),
-	LOG_FORMAT_S(SENS, SENS, "fffff",		"BaroPres,BaroAlt,BaroTemp,DiffPres,DiffPresFilt"),
-	LOG_FORMAT_S(AIR1, SENS, "fffff",	"BaroPa,BaroAlt,BaroTmp,DiffPres,DiffPresF"),
-	LOG_FORMAT(LPOS, "ffffffffLLfBBff",	"X,Y,Z,Dist,DistR,VX,VY,VZ,RLat,RLon,RAlt,PFlg,GFlg,EPH,EPV"),
-	LOG_FORMAT(LPSP, "ffffffffff",		"X,Y,Z,Yaw,VX,VY,VZ,AX,AY,AZ"),
-	LOG_FORMAT(GPS, "QBffLLfffffBHHH",	"GPSTime,Fix,EPH,EPV,Lat,Lon,Alt,VelN,VelE,VelD,Cog,nSat,SNR,N,J"),
-	LOG_FORMAT_S(DGPS, GPS,	 "QBffLLfffffBHHH",	"GPSTime,Fix,EPH,EPV,Lat,Lon,Alt,VelN,VelE,VelD,Cog,nSat,SNR,N,J"),
-	LOG_FORMAT_S(ATTC, ATTC, "ffff",		"Roll,Pitch,Yaw,Thrust"),
-	LOG_FORMAT_S(ATC1, ATTC, "ffff",		"Roll,Pitch,Yaw,Thrust"),
-	LOG_FORMAT(STAT, "BBBBB",		"MainState,NavState,ArmS,Failsafe,IsRotWing"),
-	LOG_FORMAT(VTOL, "fBBB",		"Arsp,RwMode,TransMode,Failsafe"),
-	LOG_FORMAT(CTS, "fffffff", "Vx_b,Vy_b,Vz_b,Vinf,P,Q,R"),
-	LOG_FORMAT(RC, "ffffffffffffBBBL",		"C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,RSSI,CNT,Lost,Drop"),
-	LOG_FORMAT_S(OUT0, OUT, "ffffffff",		"Out0,Out1,Out2,Out3,Out4,Out5,Out6,Out7"),
-	LOG_FORMAT_S(OUT1, OUT, "ffffffff",		"Out0,Out1,Out2,Out3,Out4,Out5,Out6,Out7"),
-	LOG_FORMAT(AIRS, "fff",			"IndSpeed,TrueSpeed,AirTemp"),
-	LOG_FORMAT(ARSP, "fff",			"RollRateSP,PitchRateSP,YawRateSP"),
-	LOG_FORMAT(FLOW, "BffffffLLHhB",	"ID,RawX,RawY,RX,RY,RZ,Dist,TSpan,DtSonar,FrmCnt,GT,Qlty"),
-	LOG_FORMAT(GPOS, "LLfffffff",		"Lat,Lon,Alt,VelN,VelE,VelD,EPH,EPV,TALT"),
-	LOG_FORMAT(GPSP, "BLLffBfbf",		"NavState,Lat,Lon,Alt,Yaw,Type,LoitR,LoitDir,PitMin"),
-	LOG_FORMAT(ESC, "HBBBHHffiffH",		"count,nESC,Conn,N,Ver,Adr,Volt,Amp,RPM,Temp,SetP,SetPRAW"),
-	LOG_FORMAT(GVSP, "fff",			"VX,VY,VZ"),
-	LOG_FORMAT(BATT, "ffffffB",		"V,VFilt,C,CFilt,Discharged,Remaining,Warning"),
-	LOG_FORMAT(DIST, "BBBff",			"Id,Type,Orientation,Distance,Covariance"),
-	LOG_FORMAT_S(TEL0, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
-	LOG_FORMAT_S(TEL1, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
-	LOG_FORMAT_S(TEL2, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
-	LOG_FORMAT_S(TEL3, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
-	LOG_FORMAT(EST0, "ffffffffffffBBHB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,nStat,fNaN,fFault,fTOut"),
-	LOG_FORMAT(EST1, "ffffffffffffffff",	"s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27"),
-	LOG_FORMAT(EST2, "ffffffffffffHHB",    "P0,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,GCHK,CTRL,fHealth"),
-	LOG_FORMAT(EST3, "ffffffffffffffff",    "P12,P13,P14,P15,P16,P17,P18,P19,P20,P21,P22,P23,P24,P25,P26,P27"),
-	LOG_FORMAT(EST4, "ffffffffffff", "VxI,VyI,VzI,PxI,PyI,PzI,VxIV,VyIV,VzIV,PxIV,PyIV,PzIV"),
-	LOG_FORMAT(EST5, "ffffffffff", "MAGxI,MAGyI,MAGzI,MAGxIV,MAGyIV,MAGzIV,HeadI,HeadIV,AirI,AirIV"),
-	LOG_FORMAT(EST6, "ffffff", "FxI,FyI,FxIV,FyIV,HAGLI,HAGLIV"),
-	LOG_FORMAT(PWR, "fffBBBBB",		"Periph5V,Servo5V,RSSI,UsbOk,BrickOk,ServoOk,PeriphOC,HipwrOC"),
-	LOG_FORMAT(MOCP, "fffffff",		"QuatW,QuatX,QuatY,QuatZ,X,Y,Z"),
-	LOG_FORMAT(VISN, "ffffffffff",		"X,Y,Z,VX,VY,VZ,QuatW,QuatX,QuatY,QuatZ"),
-	LOG_FORMAT(GS0A, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
-	LOG_FORMAT(GS0B, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
-	LOG_FORMAT(GS1A, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
-	LOG_FORMAT(GS1B, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
-	LOG_FORMAT(TECS, "ffffffffffffffB",	"ASP,AF,FSP,F,AsSP,AsF,AsDSP,AsD,EE,ERE,EDE,EDRE,PtchI,ThrI,M"),
-	LOG_FORMAT(WIND, "ffff",	"X,Y,CovX,CovY"),
-	LOG_FORMAT(ENCD, "qfqf",	"cnt0,vel0,cnt1,vel1"),
-	LOG_FORMAT(TSYN, "Q", 		"TimeOffset"),
-	LOG_FORMAT(MACS, "fff", "RRint,PRint,YRint"),
-	LOG_FORMAT(CAMT, "QI", "timestamp,seq"),
-	LOG_FORMAT(RPL1, "QffQQffffffffff", "t,gIdt,aIdt,Tm,Tb,gx,gy,gz,ax,ay,az,magX,magY,magZ,b_alt"),
-	LOG_FORMAT(RPL2, "QQLLiMMfffffffM", "Tpos,Tvel,lat,lon,alt,fix,nsats,eph,epv,sacc,v,vN,vE,vD,v_val"),
-	LOG_FORMAT(RPL3, "QffffIB", "Tflow,fx,fy,gx,gy,delT,qual"),
-	LOG_FORMAT(RPL4, "Qf", "Trng,rng"),
-	LOG_FORMAT(RPL5, "Qfffffffff", "Tev,x,y,z,q0,q1,q2,q3,posErr,angErr"),
-	LOG_FORMAT(RPL6, "Qff", "Tasp,inAsp,trAsp"),
-	LOG_FORMAT(LAND, "B", "Landed"),
-	LOG_FORMAT(LOAD, "f", "CPU"),
+//      LOG_FORMAT(ATT, "fffffffffffff",	"qw,qx,qy,qz,Roll,Pitch,Yaw,RollRate,PitchRate,YawRate,GX,GY,GZ"),
+//	LOG_FORMAT(ATSP, "ffffffff",		"RollSP,PitchSP,YawSP,ThrustSP,qw,qx,qy,qz"),
+//      LOG_FORMAT_S(IMU, IMU, "ffffffffffff",		"AccX,AccY,AccZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,tA,tG,tM"),
+//	LOG_FORMAT_S(IMU1, IMU, "ffffffffffff",		"AccX,AccY,AccZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,tA,tG,tM"),
+//	LOG_FORMAT_S(IMU2, IMU, "ffffffffffff",		"AccX,AccY,AccZ,GyroX,GyroY,GyroZ,MagX,MagY,MagZ,tA,tG,tM"),
+//	LOG_FORMAT_S(SENS, SENS, "fffff",		"BaroPres,BaroAlt,BaroTemp,DiffPres,DiffPresFilt"),
+//	LOG_FORMAT_S(AIR1, SENS, "fffff",	"BaroPa,BaroAlt,BaroTmp,DiffPres,DiffPresF"),
+//	LOG_FORMAT(LPOS, "ffffffffLLfBBff",	"X,Y,Z,Dist,DistR,VX,VY,VZ,RLat,RLon,RAlt,PFlg,GFlg,EPH,EPV"),
+//	LOG_FORMAT(LPSP, "ffffffffff",		"X,Y,Z,Yaw,VX,VY,VZ,AX,AY,AZ"),
+//	LOG_FORMAT(GPS, "QBffLLfffffBHHH",	"GPSTime,Fix,EPH,EPV,Lat,Lon,Alt,VelN,VelE,VelD,Cog,nSat,SNR,N,J"),
+//	LOG_FORMAT_S(DGPS, GPS,	 "QBffLLfffffBHHH",	"GPSTime,Fix,EPH,EPV,Lat,Lon,Alt,VelN,VelE,VelD,Cog,nSat,SNR,N,J"),
+//	LOG_FORMAT_S(ATTC, ATTC, "ffff",		"Roll,Pitch,Yaw,Thrust"),
+//	LOG_FORMAT_S(ATC1, ATTC, "ffff",		"Roll,Pitch,Yaw,Thrust"),
+//	LOG_FORMAT(STAT, "BBBBB",		"MainState,NavState,ArmS,Failsafe,IsRotWing"),
+//	LOG_FORMAT(VTOL, "fBBB",		"Arsp,RwMode,TransMode,Failsafe"),
+//	LOG_FORMAT(CTS, "fffffff", "Vx_b,Vy_b,Vz_b,Vinf,P,Q,R"),
+//	LOG_FORMAT(RC, "ffffffffffffBBBL",		"C0,C1,C2,C3,C4,C5,C6,C7,C8,C9,C10,C11,RSSI,CNT,Lost,Drop"),
+//	LOG_FORMAT_S(OUT0, OUT, "ffffffff",		"Out0,Out1,Out2,Out3,Out4,Out5,Out6,Out7"),
+//	LOG_FORMAT_S(OUT1, OUT, "ffffffff",		"Out0,Out1,Out2,Out3,Out4,Out5,Out6,Out7"),
+//	LOG_FORMAT(AIRS, "fff",			"IndSpeed,TrueSpeed,AirTemp"),
+//	LOG_FORMAT(ARSP, "fff",			"RollRateSP,PitchRateSP,YawRateSP"),
+//	LOG_FORMAT(FLOW, "BffffffLLHhB",	"ID,RawX,RawY,RX,RY,RZ,Dist,TSpan,DtSonar,FrmCnt,GT,Qlty"),
+//	LOG_FORMAT(GPOS, "LLfffffff",		"Lat,Lon,Alt,VelN,VelE,VelD,EPH,EPV,TALT"),
+//	LOG_FORMAT(GPSP, "BLLffBfbf",		"NavState,Lat,Lon,Alt,Yaw,Type,LoitR,LoitDir,PitMin"),
+//	LOG_FORMAT(ESC, "HBBBHHffiffH",		"count,nESC,Conn,N,Ver,Adr,Volt,Amp,RPM,Temp,SetP,SetPRAW"),
+//	LOG_FORMAT(GVSP, "fff",			"VX,VY,VZ"),
+//	LOG_FORMAT(BATT, "ffffffB",		"V,VFilt,C,CFilt,Discharged,Remaining,Warning"),
+//	LOG_FORMAT(DIST, "BBBff",			"Id,Type,Orientation,Distance,Covariance"),
+//	LOG_FORMAT_S(TEL0, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
+//	LOG_FORMAT_S(TEL1, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
+//	LOG_FORMAT_S(TEL2, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
+//	LOG_FORMAT_S(TEL3, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
+//	LOG_FORMAT(EST0, "ffffffffffffBBHB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,nStat,fNaN,fFault,fTOut"),
+//	LOG_FORMAT(EST1, "ffffffffffffffff",	"s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27"),
+//	LOG_FORMAT(EST2, "ffffffffffffHHB",    "P0,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11,GCHK,CTRL,fHealth"),
+//	LOG_FORMAT(EST3, "ffffffffffffffff",    "P12,P13,P14,P15,P16,P17,P18,P19,P20,P21,P22,P23,P24,P25,P26,P27"),
+//	LOG_FORMAT(EST4, "ffffffffffff", "VxI,VyI,VzI,PxI,PyI,PzI,VxIV,VyIV,VzIV,PxIV,PyIV,PzIV"),
+//	LOG_FORMAT(EST5, "ffffffffff", "MAGxI,MAGyI,MAGzI,MAGxIV,MAGyIV,MAGzIV,HeadI,HeadIV,AirI,AirIV"),
+//	LOG_FORMAT(EST6, "ffffff", "FxI,FyI,FxIV,FyIV,HAGLI,HAGLIV"),
+//	LOG_FORMAT(PWR, "fffBBBBB",		"Periph5V,Servo5V,RSSI,UsbOk,BrickOk,ServoOk,PeriphOC,HipwrOC"),
+//	LOG_FORMAT(MOCP, "fffffff",		"QuatW,QuatX,QuatY,QuatZ,X,Y,Z"),
+//	LOG_FORMAT(VISN, "ffffffffff",		"X,Y,Z,VX,VY,VZ,QuatW,QuatX,QuatY,QuatZ"),
+//	LOG_FORMAT(GS0A, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
+//	LOG_FORMAT(GS0B, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
+//	LOG_FORMAT(GS1A, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
+//	LOG_FORMAT(GS1B, "BBBBBBBBBBBBBBBB",	"s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15"),
+//	LOG_FORMAT(TECS, "ffffffffffffffB",	"ASP,AF,FSP,F,AsSP,AsF,AsDSP,AsD,EE,ERE,EDE,EDRE,PtchI,ThrI,M"),
+//	LOG_FORMAT(WIND, "ffff",	"X,Y,CovX,CovY"),
+//	LOG_FORMAT(ENCD, "qfqf",	"cnt0,vel0,cnt1,vel1"),
+//	LOG_FORMAT(TSYN, "Q", 		"TimeOffset"),
+//	LOG_FORMAT(MACS, "fff", "RRint,PRint,YRint"),
+//	LOG_FORMAT(CAMT, "QI", "timestamp,seq"),
+//	LOG_FORMAT(RPL1, "QffQQffffffffff", "t,gIdt,aIdt,Tm,Tb,gx,gy,gz,ax,ay,az,magX,magY,magZ,b_alt"),
+//	LOG_FORMAT(RPL2, "QQLLiMMfffffffM", "Tpos,Tvel,lat,lon,alt,fix,nsats,eph,epv,sacc,v,vN,vE,vD,v_val"),
+//	LOG_FORMAT(RPL3, "QffffIB", "Tflow,fx,fy,gx,gy,delT,qual"),
+//	LOG_FORMAT(RPL4, "Qf", "Trng,rng"),
+//	LOG_FORMAT(RPL5, "Qfffffffff", "Tev,x,y,z,q0,q1,q2,q3,posErr,angErr"),
+//	LOG_FORMAT(RPL6, "Qff", "Tasp,inAsp,trAsp"),
+//	LOG_FORMAT(LAND, "B", "Landed"),
+//	LOG_FORMAT(LOAD, "f", "CPU"),
+
+//        LOG_FORMAT(VAR1, "LLLLLLLLL", "tim,sa,sb,px,py,pz,vx,vy,vz"),//dstone
+//        LOG_FORMAT(VAR2, "LLLLLLLLL", "ax,ay,az,rpx,rpy,rpz,pqx,pqy,pqz"),//LLLLLLLLL  fffffffff
+//        LOG_FORMAT(VAR3, "LLLLLLLL", "r1,r2,r3,r4,r5,r6,r7,r8"),
+//        LOG_FORMAT(VAR4, "LLLLLLLL", "rcr,rcp,rct,rcy,p12,p34,p56,p78"),//LLLLLLLL   ffffffff
+//        LOG_FORMAT(VAR5, "LLLLLLLLLL", "th,rf,alt,gx,gy,gz,mx,my,mz,yaw"),//LLLLLLLLLL   ffffffffff
+
 	/* system-level messages, ID >= 0x80 */
 	/* FMT: don't write format of format message, it's useless */
-	LOG_FORMAT(TIME, "Q", "StartTime"),
-	LOG_FORMAT(VER, "NZ", "Arch,FwGit"),
-	LOG_FORMAT(PARM, "Nf", "Name,Value")
+//	LOG_FORMAT(TIME, "Q", "StartTime"),
+//	LOG_FORMAT(VER, "NZ", "Arch,FwGit"),
+//	LOG_FORMAT(PARM, "Nf", "Name,Value")
 };
 
 static const unsigned log_formats_num = sizeof(log_formats) / sizeof(log_formats[0]);

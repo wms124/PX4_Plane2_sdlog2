@@ -127,11 +127,11 @@
 #define PX4_EPOCH_SECS 1234567890L
 
 #define LOGBUFFER_WRITE_AND_COUNT(_msg) pthread_mutex_lock(&logbuffer_mutex); \
-    if (logbuffer_write(&lb, &log_msg, LOG_PACKET_SIZE(_msg))) /*{ \
-        log_msgs_written++; \
+	if (logbuffer_write(&lb, &log_msg, LOG_PACKET_SIZE(_msg))) { \
+		log_msgs_written++; \
 	} else { \
-        log_msgs_skipped++; \
-    } */\
+		log_msgs_skipped++; \
+	} \
 	pthread_mutex_unlock(&logbuffer_mutex);
 
 #define SDLOG_MIN(X,Y) ((X) < (Y) ? (X) : (Y))
@@ -211,7 +211,7 @@ static bool sess_folder_created = false;
 
 
 static union {
-    int i;//int
+    int32_t i;//int
     float x;
 } float2int;
 
@@ -219,9 +219,6 @@ static int get_int4(float x) {
     float2int.x = (float) x;
     return float2int.i;
 }
-
-
-static int tim = 0;
 
 
 /**
@@ -265,7 +262,7 @@ static void sdlog2_stop_log(void);
 /**
  * Write a header to log file: list of message formats.
  */
-//static int write_formats(int fd);
+static int write_formats(int fd);
 
 /**
  * Write version message to log file.
@@ -535,7 +532,7 @@ int open_log_file()
 
 	/* start logging if we have a valid time and the time is not in the past */
 	if (log_name_timestamp && time_ok) {
-        strftime(log_file_name, sizeof(log_file_name), "%H_%M_%S.px4log", &tt);//
+		strftime(log_file_name, sizeof(log_file_name), "%H_%M_%S.px4log", &tt);
 		snprintf(log_file_path, sizeof(log_file_path), "%s/%s", log_dir, log_file_name);
 
 	} else {
@@ -641,7 +638,7 @@ static void *logwriter_thread(void *arg)
 	struct logbuffer_s *logbuf = (struct logbuffer_s *)arg;
 
 	/* write log messages formats, version and parameters */
-//	log_bytes_written += write_formats(log_fd);
+	log_bytes_written += write_formats(log_fd);
 
 //	log_bytes_written += write_version(log_fd);
 
@@ -649,7 +646,7 @@ static void *logwriter_thread(void *arg)
 
 	fsync(log_fd);
 
-    int poll_count = 0;
+	int poll_count = 0;
 
 	void *read_ptr;
 
@@ -682,56 +679,55 @@ static void *logwriter_thread(void *arg)
 
 		if (available > 0) {
 
-            /* do heavy IO here */
-            if (available > MAX_WRITE_CHUNK) {
-                n = MAX_WRITE_CHUNK;
+			/* do heavy IO here */
+			if (available > MAX_WRITE_CHUNK) {
+				n = MAX_WRITE_CHUNK;
 
-            } else {
-                n = available;
-            }
+			} else {
+				n = available;
+			}
 
-            perf_begin(perf_write);
-            n = write(log_fd, read_ptr, n);
-            perf_end(perf_write);
+			perf_begin(perf_write);
+			n = write(log_fd, read_ptr, n);
+			perf_end(perf_write);
 
-            should_wait = (n == available);
-            should_wait = (n == available) && !is_part;
+			should_wait = (n == available) && !is_part;
 
-            if (n < 0) {
-                main_thread_should_exit = true;
-                warn("error writing log file");
-                break;
-            }
+			if (n < 0) {
+				main_thread_should_exit = true;
+				warn("error writing log file");
+				break;
+			}
 
-            if (n > 0) {
-                log_bytes_written += n;
-            }
+			if (n > 0) {
+				log_bytes_written += n;
+			}
 
 		} else {
 			n = 0;
 
-            /* exit only with empty buffer */
-            if (main_thread_should_exit || logwriter_should_exit) {
-                break;
-            }
+			/* exit only with empty buffer */
+			if (main_thread_should_exit || logwriter_should_exit) {
+				break;
+			}
 
-            should_wait = true;
+			should_wait = true;
 		}
 
-        if (++poll_count == 10) {
-            fsync(log_fd);
-            poll_count = 0;
+		if (++poll_count == 10) {
+			fsync(log_fd);
+			poll_count = 0;
 
-        }
+		}
 
-        if (log_bytes_written - last_checked_bytes_written > 20*1024*1024) {
-            /* check if space is available, if not stop everything */
-            if (check_free_space() != OK) {
-                logwriter_should_exit = true;
-                main_thread_should_exit = true;
-            }
-            last_checked_bytes_written = log_bytes_written;
-        }
+		if (log_bytes_written - last_checked_bytes_written > 20*1024*1024) {
+			/* check if space is available, if not stop everything */
+			if (check_free_space() != OK) {
+				logwriter_should_exit = true;
+				main_thread_should_exit = true;
+			}
+			last_checked_bytes_written = log_bytes_written;
+		}
 	}
 
 	fsync(log_fd);
@@ -856,26 +852,26 @@ void sdlog2_stop_log()
 	sdlog2_status();
 }
 
-//int write_formats(int fd)
-//{
-//	/* construct message format packet */
-//	struct {
-//		LOG_PACKET_HEADER;
-//		struct log_format_s body;
-//	} log_msg_format = {
-//		LOG_PACKET_HEADER_INIT(LOG_FORMAT_MSG),
-//	};
+int write_formats(int fd)
+{
+	/* construct message format packet */
+	struct {
+		LOG_PACKET_HEADER;
+		struct log_format_s body;
+	} log_msg_format = {
+		LOG_PACKET_HEADER_INIT(LOG_FORMAT_MSG),
+	};
 
-//	int written = 0;
+	int written = 0;
 
-//	/* fill message format packet for each format and write it */
-//	for (unsigned i = 0; i < log_formats_num; i++) {
-//		log_msg_format.body = log_formats[i];
-//		written += write(fd, &log_msg_format, sizeof(log_msg_format));
-//	}
+	/* fill message format packet for each format and write it */
+	for (unsigned i = 0; i < log_formats_num; i++) {
+		log_msg_format.body = log_formats[i];
+		written += write(fd, &log_msg_format, sizeof(log_msg_format));
+	}
 
-//	return written;
-//}
+	return written;
+}
 
 //int write_version(int fd)
 //{
@@ -1176,9 +1172,6 @@ int sdlog2_thread_main(int argc, char *argv[])
 	memset(&buf_commander_state, 0, sizeof(buf_commander_state));
 
     //dstone:
-    struct vehicle_local_position_s buf_local_pos;
-    memset(&buf_local_pos, 0, sizeof(buf_local_pos));
-
     struct sensor_combined_s buf_sensor;
     memset(&buf_sensor, 0, sizeof(buf_sensor));
 
@@ -1190,9 +1183,6 @@ int sdlog2_thread_main(int argc, char *argv[])
 
     struct actuator_outputs_s buf_outputs;
     memset(&buf_outputs,0,sizeof(buf_outputs));
-
-    struct actuator_controls_s buf_act_controls;
-    memset(&buf_act_controls,0,sizeof(buf_act_controls));
 
 	/* There are different log types possible on different platforms. */
 	enum {
@@ -1325,7 +1315,6 @@ int sdlog2_thread_main(int argc, char *argv[])
             struct log_VAR3_s log_VAR3;
             struct log_VAR4_s log_VAR4;
             struct log_VAR5_s log_VAR5;
-            struct log_VAR6_s log_VAR6;
 		} body;
 	} log_msg = {
 		LOG_PACKET_HEADER_INIT(0)
@@ -1594,22 +1583,22 @@ int sdlog2_thread_main(int argc, char *argv[])
 		/* write time stamp message */
 		log_msg.msg_type = LOG_TIME_MSG;
 		log_msg.body.log_TIME.t = hrt_absolute_time();
-        //LOGBUFFER_WRITE_AND_COUNT(TIME);
+		LOGBUFFER_WRITE_AND_COUNT(TIME);
 
 		/* --- COMMANDER INTERNAL STATE --- */
 		copy_if_updated(ORB_ID(commander_state), &subs.commander_state_sub,
 				&buf_commander_state);
 
-//		/* --- VEHICLE STATUS --- */
-//		if (status_updated) {
-//			log_msg.msg_type = LOG_STAT_MSG;
-//			log_msg.body.log_STAT.main_state = buf_commander_state.main_state;
-//			log_msg.body.log_STAT.nav_state = buf_status.nav_state;
-//			log_msg.body.log_STAT.arming_state = buf_status.arming_state;
-//			log_msg.body.log_STAT.failsafe = (uint8_t) buf_status.failsafe;
-//			log_msg.body.log_STAT.is_rot_wing = (uint8_t)buf_status.is_rotary_wing;
-//			LOGBUFFER_WRITE_AND_COUNT(STAT);
-//		}
+		/* --- VEHICLE STATUS --- */
+		if (status_updated) {
+			log_msg.msg_type = LOG_STAT_MSG;
+			log_msg.body.log_STAT.main_state = buf_commander_state.main_state;
+			log_msg.body.log_STAT.nav_state = buf_status.nav_state;
+			log_msg.body.log_STAT.arming_state = buf_status.arming_state;
+			log_msg.body.log_STAT.failsafe = (uint8_t) buf_status.failsafe;
+			log_msg.body.log_STAT.is_rot_wing = (uint8_t)buf_status.is_rotary_wing;
+			LOGBUFFER_WRITE_AND_COUNT(STAT);
+		}
 
 		/* --- EKF2 REPLAY --- */
 		if (log_type == LOG_TYPE_ALL || log_type == LOG_TYPE_REPLAY_ONLY) {
@@ -2302,231 +2291,105 @@ int sdlog2_thread_main(int argc, char *argv[])
 			}
 		}
 
-//		/* --- ATTITUDE --- */
-//        if (copy_if_updated(ORB_ID(vehicle_attitude), &subs.att_sub, &buf.att)) {
-//			log_msg.msg_type = LOG_ATT_MSG;
-//            log_msg.body.log_ATT.q_w = buf.att.q[0];
-//            log_msg.body.log_ATT.q_x = buf.att.q[1];
-//            log_msg.body.log_ATT.q_y = buf.att.q[2];
-//            log_msg.body.log_ATT.q_z = buf.att.q[3];
-//            log_msg.body.log_ATT.roll = buf.att.roll;
-//            log_msg.body.log_ATT.pitch = buf.att.pitch;
-//            log_msg.body.log_ATT.yaw = buf.att.yaw;
-//            log_msg.body.log_ATT.roll_rate = buf.att.rollspeed;
-//            log_msg.body.log_ATT.pitch_rate = buf.att.pitchspeed;
-//            log_msg.body.log_ATT.yaw_rate = buf.att.yawspeed;
-//            log_msg.body.log_ATT.gx = buf.att.g_comp[0];
-//            log_msg.body.log_ATT.gy = buf.att.g_comp[1];
-//            log_msg.body.log_ATT.gz = buf.att.g_comp[2];
-//			LOGBUFFER_WRITE_AND_COUNT(ATT);
-//		}
+		/* --- ATTITUDE --- */
+        if (copy_if_updated(ORB_ID(vehicle_attitude), &subs.att_sub, &buf.att)) {
+			log_msg.msg_type = LOG_ATT_MSG;
+            log_msg.body.log_ATT.q_w = buf.att.q[0];
+            log_msg.body.log_ATT.q_x = buf.att.q[1];
+            log_msg.body.log_ATT.q_y = buf.att.q[2];
+            log_msg.body.log_ATT.q_z = buf.att.q[3];
+            log_msg.body.log_ATT.roll = buf.att.roll;
+            log_msg.body.log_ATT.pitch = buf.att.pitch;
+            log_msg.body.log_ATT.yaw = buf.att.yaw;
+            log_msg.body.log_ATT.roll_rate = buf.att.rollspeed;
+            log_msg.body.log_ATT.pitch_rate = buf.att.pitchspeed;
+            log_msg.body.log_ATT.yaw_rate = buf.att.yawspeed;
+            log_msg.body.log_ATT.gx = buf.att.g_comp[0];
+            log_msg.body.log_ATT.gy = buf.att.g_comp[1];
+            log_msg.body.log_ATT.gz = buf.att.g_comp[2];
+			LOGBUFFER_WRITE_AND_COUNT(ATT);
+		}
 
 
         {//dstone VAR1
-//            copy_if_updated_multi(ORB_ID(vehicle_gps_position), 0, &subs.gps_pos_sub[0], &buf_gps_pos);
-//            log_msg.msg_type = LOG_VAR1_MSG;
-//            log_msg.body.log_VAR1.os_time = (uint32_t)hrt_absolute_time();
-//            log_msg.body.log_VAR1.monitor_status_a = 0;
-//            log_msg.body.log_VAR1.monitor_status_b = 0;
-//            log_msg.body.log_VAR1.ekf_pos_x = get_int4(buf_gps_pos.eph);//get_int4(buf_gps_pos.eph);
-//            log_msg.body.log_VAR1.ekf_pos_y = get_int4(buf_gps_pos.epv);
-//            log_msg.body.log_VAR1.ekf_pos_z = get_int4(buf_gps_pos.alt);
-//            log_msg.body.log_VAR1.ekf_vel_x = get_int4(buf_gps_pos.vel_n_m_s);//get_int4(buf_gps_pos.vel_n_m_s);
-//            log_msg.body.log_VAR1.ekf_vel_y = get_int4(buf_gps_pos.vel_e_m_s);
-//            log_msg.body.log_VAR1.ekf_vel_z = get_int4(buf_gps_pos.vel_d_m_s);
-
-//            log_msg.body.log_VAR1.os_time = 1;
-//            log_msg.body.log_VAR1.monitor_status_a = 0;
-//            log_msg.body.log_VAR1.monitor_status_b = 0;
-//            log_msg.body.log_VAR1.ekf_pos_x = 2;//get_int4(buf_gps_pos.eph);
-//            log_msg.body.log_VAR1.ekf_pos_y = 3;
-//            log_msg.body.log_VAR1.ekf_pos_z = 4;
-//            log_msg.body.log_VAR1.ekf_vel_x = 5;//get_int4(buf_gps_pos.vel_n_m_s);
-//            log_msg.body.log_VAR1.ekf_vel_y = 6;
-//            log_msg.body.log_VAR1.ekf_vel_z = 7;
-
-            //LOGBUFFER_WRITE_AND_COUNT(VAR1);
+            copy_if_updated_multi(ORB_ID(vehicle_gps_position), 0, &subs.gps_pos_sub[0], &buf_gps_pos);
+            log_msg.msg_type = LOG_VAR1_MSG;
+            log_msg.body.log_VAR1.os_time = hrt_absolute_time();
+            log_msg.body.log_VAR1.monitor_status_a = 0;
+            log_msg.body.log_VAR1.monitor_status_b = 0;
+            log_msg.body.log_VAR1.ekf_pos_x = get_int4(buf_gps_pos.eph);//get_int4(buf_gps_pos.eph);
+            log_msg.body.log_VAR1.ekf_pos_y = get_int4(buf_gps_pos.epv);
+            log_msg.body.log_VAR1.ekf_pos_z = get_int4(buf_gps_pos.alt);
+            log_msg.body.log_VAR1.ekf_vel_x = get_int4(buf_gps_pos.vel_n_m_s);//get_int4(buf_gps_pos.vel_n_m_s);
+            log_msg.body.log_VAR1.ekf_vel_y = get_int4(buf_gps_pos.vel_e_m_s);
+            log_msg.body.log_VAR1.ekf_vel_z = get_int4(buf_gps_pos.vel_d_m_s);
+            LOGBUFFER_WRITE_AND_COUNT(VAR1);
         }
 
         //orb_copy(ORB_ID(sensor_combined), subs.sensor_sub, &buf.sensor);
         //copy_if_updated(ORB_ID(vehicle_attitude), &subs.att_sub, &buf.att);
 
         {//dstone VAR2
-//            copy_if_updated(ORB_ID(sensor_combined), &subs.sensor_sub, &buf_sensor);
+            copy_if_updated(ORB_ID(sensor_combined), &subs.sensor_sub, &buf_sensor);
 
-//            log_msg.msg_type = LOG_VAR2_MSG;
-//            log_msg.body.log_VAR2.ekf_acc_x = buf_sensor.accelerometer_m_s2[0];
-//            log_msg.body.log_VAR2.ekf_acc_y = buf_sensor.accelerometer_m_s2[1];
-//            log_msg.body.log_VAR2.ekf_acc_z = buf_sensor.accelerometer_m_s2[2];
+            log_msg.msg_type = LOG_VAR2_MSG;
+            log_msg.body.log_VAR2.ekf_acc_x = buf_sensor.accelerometer_m_s2[0];
+            log_msg.body.log_VAR2.ekf_acc_y = buf_sensor.accelerometer_m_s2[1];
+            log_msg.body.log_VAR2.ekf_acc_z = buf_sensor.accelerometer_m_s2[2];
 
-//            //copy_if_updated(ORB_ID(vehicle_attitude), &subs.att_sub, &buf_att);
-//            log_msg.body.log_VAR2.ekf_rpy_x = buf.att.roll;
-//            log_msg.body.log_VAR2.ekf_rpy_y = buf.att.pitch;
-//            log_msg.body.log_VAR2.ekf_rpy_z = buf.att.yaw;
-//            log_msg.body.log_VAR2.ekf_pqr_x = buf.att.rollspeed;
-//            log_msg.body.log_VAR2.ekf_pqr_y = buf.att.pitchspeed;
-//            log_msg.body.log_VAR2.ekf_pqr_z = buf.att.yawspeed;
-
-//            log_msg.body.log_VAR2.ekf_acc_x = get_int4(buf_sensor.accelerometer_m_s2[0]);
-//            log_msg.body.log_VAR2.ekf_acc_y = get_int4(buf_sensor.accelerometer_m_s2[1]);
-//            log_msg.body.log_VAR2.ekf_acc_z = get_int4(buf_sensor.accelerometer_m_s2[2]);
-//            log_msg.body.log_VAR2.ekf_rpy_x = get_int4(buf.att.roll);
-//            log_msg.body.log_VAR2.ekf_rpy_y = get_int4(buf.att.pitch);
-//            log_msg.body.log_VAR2.ekf_rpy_z = get_int4(buf.att.yaw);
-//            log_msg.body.log_VAR2.ekf_pqr_x = get_int4(buf.att.rollspeed);
-//            log_msg.body.log_VAR2.ekf_pqr_y = get_int4(buf.att.pitchspeed);
-//            log_msg.body.log_VAR2.ekf_pqr_z = get_int4(buf.att.yawspeed);
-
-//            log_msg.body.log_VAR2.ekf_acc_x = 1;
-//            log_msg.body.log_VAR2.ekf_acc_y = 2;
-//            log_msg.body.log_VAR2.ekf_acc_z = 3;
-//            log_msg.body.log_VAR2.ekf_rpy_x = 4;
-//            log_msg.body.log_VAR2.ekf_rpy_y = 5;
-//            log_msg.body.log_VAR2.ekf_rpy_z = 6;
-//            log_msg.body.log_VAR2.ekf_pqr_x = 7;
-//            log_msg.body.log_VAR2.ekf_pqr_y = 8;
-//            log_msg.body.log_VAR2.ekf_pqr_z = 9;
-
-            //LOGBUFFER_WRITE_AND_COUNT(VAR2);
+            //copy_if_updated(ORB_ID(vehicle_attitude), &subs.att_sub, &buf_att);
+            log_msg.body.log_VAR2.ekf_rpy_x = buf.att.roll;
+            log_msg.body.log_VAR2.ekf_rpy_y = buf.att.pitch;
+            log_msg.body.log_VAR2.ekf_rpy_z = buf.att.yaw;
+            log_msg.body.log_VAR2.ekf_pqr_x = buf.att.rollspeed;
+            log_msg.body.log_VAR2.ekf_pqr_y = buf.att.pitchspeed;
+            log_msg.body.log_VAR2.ekf_pqr_z = buf.att.yawspeed;
+            LOGBUFFER_WRITE_AND_COUNT(VAR2);
         }
 
         {//dstone VAR3
-//            log_msg.msg_type = LOG_VAR3_MSG;
-//            log_msg.body.log_VAR3.guidance_ref_1 = 0;
-//            log_msg.body.log_VAR3.guidance_ref_2 = 1;
-//            log_msg.body.log_VAR3.guidance_ref_3 = 2;
-//            log_msg.body.log_VAR3.guidance_ref_4 = 3;
-//            log_msg.body.log_VAR3.guidance_ref_5 = 4;
-//            log_msg.body.log_VAR3.guidance_ref_6 = 5;
-//            log_msg.body.log_VAR3.guidance_ref_7 = 6;
-//            log_msg.body.log_VAR3.guidance_ref_8 = 7;
-
-            //LOGBUFFER_WRITE_AND_COUNT(VAR3);
+            log_msg.msg_type = LOG_VAR3_MSG;
+            log_msg.body.log_VAR3.guidance_ref_1 = 0;
+            log_msg.body.log_VAR3.guidance_ref_2 = 1;
+            log_msg.body.log_VAR3.guidance_ref_3 = 2;
+            log_msg.body.log_VAR3.guidance_ref_4 = 3;
+            log_msg.body.log_VAR3.guidance_ref_5 = 4;
+            log_msg.body.log_VAR3.guidance_ref_6 = 5;
+            log_msg.body.log_VAR3.guidance_ref_7 = 6;
+            log_msg.body.log_VAR3.guidance_ref_8 = 7;
+            LOGBUFFER_WRITE_AND_COUNT(VAR3);
         }
 
         {//dstone VAR4
-//            copy_if_updated(ORB_ID(rc_channels), &subs.rc_sub, &buf_rc);
+            copy_if_updated(ORB_ID(rc_channels), &subs.rc_sub, &buf_rc);
 
-//            log_msg.msg_type = LOG_VAR4_MSG;
-//            log_msg.body.log_VAR4.rc_in_roll = get_int4(buf_rc.channels[0]);
-//            log_msg.body.log_VAR4.rc_in_pitch = get_int4(buf_rc.channels[1]);
-//            log_msg.body.log_VAR4.rc_in_thr = get_int4(buf_rc.channels[2]);
-//            log_msg.body.log_VAR4.rc_in_yaw = get_int4(buf_rc.channels[3]);
+            log_msg.msg_type = LOG_VAR4_MSG;
+            log_msg.body.log_VAR4.rc_in_roll = buf_rc.channels[0];
+            log_msg.body.log_VAR4.rc_in_pitch = buf_rc.channels[1];
+            log_msg.body.log_VAR4.rc_in_thr = buf_rc.channels[2];
+            log_msg.body.log_VAR4.rc_in_yaw = buf_rc.channels[3];
 
-//            copy_if_updated_multi(ORB_ID(actuator_outputs), 0, &subs.act_outputs_sub, &buf_outputs);
-//            log_msg.body.log_VAR4.pwm_12 = get_int4(buf_outputs.output[0])+get_int4(buf_outputs.output[1])*0x10000;
-//            log_msg.body.log_VAR4.pwm_34 = get_int4(buf_outputs.output[2])+get_int4(buf_outputs.output[3])*0x10000;
-//            log_msg.body.log_VAR4.pwm_56 = get_int4(buf_outputs.output[4])+get_int4(buf_outputs.output[5])*0x10000;
-//            log_msg.body.log_VAR4.pwm_78 = get_int4(buf_outputs.output[6])+get_int4(buf_outputs.output[7])*0x10000;
-
-//            log_msg.body.log_VAR4.rc_in_roll = 1;//get_int4(buf_rc.channels[0]);
-//            log_msg.body.log_VAR4.rc_in_pitch = 2;//get_int4(buf_rc.channels[1]);
-//            log_msg.body.log_VAR4.rc_in_thr = 3;//get_int4(buf_rc.channels[2]);
-//            log_msg.body.log_VAR4.rc_in_yaw = 4;//get_int4(buf_rc.channels[3]);
-
-//            //copy_if_updated_multi(ORB_ID(actuator_outputs), 0, &subs.act_outputs_sub, &buf_outputs);
-//            log_msg.body.log_VAR4.pwm_12 = 5;//get_int4(buf_outputs.output[0])+get_int4(buf_outputs.output[1])*0x10000;
-//            log_msg.body.log_VAR4.pwm_34 = 6;//get_int4(buf_outputs.output[2])+get_int4(buf_outputs.output[3])*0x10000;
-//            log_msg.body.log_VAR4.pwm_56 = 7;//get_int4(buf_outputs.output[4])+get_int4(buf_outputs.output[5])*0x10000;
-//            log_msg.body.log_VAR4.pwm_78 = 8;//get_int4(buf_outputs.output[6])+get_int4(buf_outputs.output[7])*0x10000;
-
-            //LOGBUFFER_WRITE_AND_COUNT(VAR4);
+            copy_if_updated_multi(ORB_ID(actuator_outputs), 0, &subs.act_outputs_sub, &buf_outputs);
+            log_msg.body.log_VAR4.pwm_12 = buf_outputs.output[0];
+            log_msg.body.log_VAR4.pwm_34 = buf_outputs.output[1];
+            log_msg.body.log_VAR4.pwm_56 = buf_outputs.output[2];
+            log_msg.body.log_VAR4.pwm_78 = buf_outputs.output[3];
+            LOGBUFFER_WRITE_AND_COUNT(VAR4);
         }
 
         {//dstone VAR5
-//            log_msg.msg_type = LOG_VAR5_MSG;
-//            log_msg.body.log_VAR5.throttle = get_int4(buf_rc.channels[2]);
-//            log_msg.body.log_VAR5.rotor_frequency = 1;
-//            log_msg.body.log_VAR5.press_altitude = get_int4(buf_sensor.baro_alt_meter);
-//            log_msg.body.log_VAR5.gps_pos_x = get_int4(buf_gps_pos.lat);
-//            log_msg.body.log_VAR5.gps_pos_y = get_int4(buf_gps_pos.lon);
-//            log_msg.body.log_VAR5.gps_pos_z = get_int4(buf_gps_pos.alt);
-//            log_msg.body.log_VAR5.mag_x = get_int4(buf_sensor.magnetometer_ga[0]);
-//            log_msg.body.log_VAR5.mag_x = get_int4(buf_sensor.magnetometer_ga[1]);
-//            log_msg.body.log_VAR5.mag_x = get_int4(buf_sensor.magnetometer_ga[2]);
-//            log_msg.body.log_VAR5.yaw_angle = get_int4(buf.att.yaw);
-
-//            log_msg.body.log_VAR5.throttle = 1;//get_int4(buf_rc.channels[2]);
-//            log_msg.body.log_VAR5.rotor_frequency = 1;
-//            log_msg.body.log_VAR5.press_altitude = 3;//get_int4(buf_sensor.baro_alt_meter);
-//            log_msg.body.log_VAR5.gps_pos_x = 4;//get_int4(buf_gps_pos.lat);
-//            log_msg.body.log_VAR5.gps_pos_y = 5;//get_int4(buf_gps_pos.lon);
-//            log_msg.body.log_VAR5.gps_pos_z = 6;//get_int4(buf_gps_pos.alt);
-//            log_msg.body.log_VAR5.mag_x = 7;//get_int4(buf_sensor.magnetometer_ga[0]);
-//            log_msg.body.log_VAR5.mag_x = 8;//get_int4(buf_sensor.magnetometer_ga[1]);
-//            log_msg.body.log_VAR5.mag_x = 9;//get_int4(buf_sensor.magnetometer_ga[2]);
-//            log_msg.body.log_VAR5.yaw_angle = 10;//get_int4(buf.att.yaw);
-
-            //LOGBUFFER_WRITE_AND_COUNT(VAR5);
-        }
-
-
-        {
-            copy_if_updated(ORB_ID(vehicle_local_position), &subs.local_pos_sub, &buf_local_pos);
-            copy_if_updated_multi(ORB_ID(vehicle_gps_position), 0, &subs.gps_pos_sub[0], &buf_gps_pos);
-            copy_if_updated(ORB_ID(sensor_combined), &subs.sensor_sub, &buf_sensor);
-            copy_if_updated(ORB_ID(vehicle_attitude), &subs.att_sub, &buf_att);
-            copy_if_updated(ORB_ID(rc_channels), &subs.rc_sub, &buf_rc);
-            copy_if_updated_multi(ORB_ID(actuator_outputs), 0, &subs.act_outputs_sub, &buf_outputs);
-            copy_if_updated(ORB_ID_VEHICLE_ATTITUDE_CONTROLS, &subs.act_controls_sub, &buf_act_controls);
-            //copy_if_updated(ORB_ID(actuator_controls_1), &subs.act_controls_1_sub,&buf_act_controls);
-
-            log_msg.msg_type = LOG_VAR6_MSG;
-
-            log_msg.body.log_VAR6.os_time =  ++tim;//hrt_absolute_time();//get_int4(1.0f);
-            log_msg.body.log_VAR6.monitor_status_a = get_int4(0.0f);
-            log_msg.body.log_VAR6.monitor_status_b = get_int4(0.0f);
-            log_msg.body.log_VAR6.ekf_pos_x = get_int4(buf_local_pos.x);//get_int4(buf_sensor.accelerometer_m_s2[0]);
-            log_msg.body.log_VAR6.ekf_pos_y = get_int4(buf_local_pos.y);//get_int4(buf_sensor.accelerometer_m_s2[0]);
-            log_msg.body.log_VAR6.ekf_pos_z = get_int4(buf_local_pos.z);//get_int4(buf_sensor.accelerometer_m_s2[0]);
-            log_msg.body.log_VAR6.ekf_vel_x = get_int4(buf_gps_pos.vel_n_m_s);//get_int4(buf_sensor.accelerometer_m_s2[0]);
-            log_msg.body.log_VAR6.ekf_vel_y = get_int4(buf_gps_pos.vel_e_m_s);//get_int4(buf_sensor.accelerometer_m_s2[0]);
-            log_msg.body.log_VAR6.ekf_vel_z = get_int4(buf_gps_pos.vel_d_m_s);//get_int4(buf_sensor.accelerometer_m_s2[0]);
-
-            //10
-            log_msg.body.log_VAR6.ekf_acc_x = get_int4(buf_sensor.accelerometer_m_s2[0]);
-            log_msg.body.log_VAR6.ekf_acc_y = get_int4(buf_sensor.accelerometer_m_s2[1]);
-            log_msg.body.log_VAR6.ekf_acc_z = get_int4(buf_sensor.accelerometer_m_s2[2]);
-            log_msg.body.log_VAR6.ekf_rpy_x = get_int4(buf_att.roll);
-            log_msg.body.log_VAR6.ekf_rpy_y = get_int4(buf_att.pitch);
-            log_msg.body.log_VAR6.ekf_rpy_z = get_int4(buf_att.yaw);
-            log_msg.body.log_VAR6.ekf_pqr_x = get_int4(buf_att.rollspeed);
-            log_msg.body.log_VAR6.ekf_pqr_y = get_int4(buf_att.pitchspeed);
-            log_msg.body.log_VAR6.ekf_pqr_z = get_int4(buf_att.yawspeed);
-
-            //19
-            log_msg.body.log_VAR6.guidance_ref_1 = 0;
-            log_msg.body.log_VAR6.guidance_ref_2 = 0;
-            log_msg.body.log_VAR6.guidance_ref_3 = 0;
-            log_msg.body.log_VAR6.guidance_ref_4 = 0;
-            log_msg.body.log_VAR6.guidance_ref_5 = 0;
-            log_msg.body.log_VAR6.guidance_ref_6 = 0;
-            log_msg.body.log_VAR6.guidance_ref_7 = 0;
-            log_msg.body.log_VAR6.guidance_ref_8 = 0;
-
-            //27
-            log_msg.body.log_VAR6.rc_in_roll = get_int4(buf_rc.channels[0]);
-            log_msg.body.log_VAR6.rc_in_pitch = get_int4(buf_rc.channels[1]);
-            log_msg.body.log_VAR6.rc_in_thr = get_int4(buf_rc.channels[2]);
-            log_msg.body.log_VAR6.rc_in_yaw = get_int4(buf_rc.channels[3]);
-            log_msg.body.log_VAR6.pwm_12 = 0;//get_int2(buf_act_controls.control[0])+get_int2(buf_act_controls.control[1])*0x10000;
-            log_msg.body.log_VAR6.pwm_34 = 0;//get_int2(buf_act_controls.control[2])+get_int2(buf_act_controls.control[3])*0x10000;
-            log_msg.body.log_VAR6.pwm_56 = 0;//get_int2(buf_act_controls.control[4])+get_int2(buf_act_controls.control[5])*0x10000;
-            log_msg.body.log_VAR6.pwm_78 = 0;//get_int2(buf_act_controls.control[6])+get_int2(buf_act_controls.control[7])*0x10000;
-
-
-            //35
-            log_msg.body.log_VAR6.throttle = get_int4(buf_rc.channels[2]);
-            log_msg.body.log_VAR6.rotor_frequency = 0;
-            log_msg.body.log_VAR6.press_altitude = get_int4(buf_sensor.baro_alt_meter);
-            log_msg.body.log_VAR6.gps_pos_x = buf_gps_pos.lat;//get_int4(buf_gps_pos.lat);
-            log_msg.body.log_VAR6.gps_pos_y = buf_gps_pos.lon;//get_int4(buf_gps_pos.lon);
-            log_msg.body.log_VAR6.gps_pos_z = buf_gps_pos.alt;//get_int4(buf_gps_pos.alt);
-            log_msg.body.log_VAR6.mag_x = get_int4(buf_sensor.magnetometer_ga[0]);
-            log_msg.body.log_VAR6.mag_y = get_int4(buf_sensor.magnetometer_ga[1]);
-            log_msg.body.log_VAR6.mag_z = get_int4(buf_sensor.magnetometer_ga[2]);
-            log_msg.body.log_VAR6.yaw_angle = get_int4(buf_att.yaw);
-            LOGBUFFER_WRITE_AND_COUNT(VAR6);
+            log_msg.msg_type = LOG_VAR5_MSG;
+            log_msg.body.log_VAR5.throttle = buf_rc.channels[2];
+            log_msg.body.log_VAR5.rotor_frequency = 1;
+            log_msg.body.log_VAR5.press_altitude = buf_sensor.baro_alt_meter;
+            log_msg.body.log_VAR5.gps_pos_x = buf_gps_pos.lat;
+            log_msg.body.log_VAR5.gps_pos_y = buf_gps_pos.lon;
+            log_msg.body.log_VAR5.gps_pos_z = buf_gps_pos.alt;
+            log_msg.body.log_VAR5.mag_x = buf_sensor.magnetometer_ga[0];
+            log_msg.body.log_VAR5.mag_x = buf_sensor.magnetometer_ga[1];
+            log_msg.body.log_VAR5.mag_x = buf_sensor.magnetometer_ga[2];
+            log_msg.body.log_VAR5.yaw_angle = buf.att.yaw;
+            LOGBUFFER_WRITE_AND_COUNT(VAR5);
         }
 
 //		/* --- CAMERA TRIGGER --- */

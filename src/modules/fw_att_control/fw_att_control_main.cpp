@@ -85,6 +85,8 @@
 #include <ecl/attitude_fw/ecl_wheel_controller.h>
 #include <platforms/px4_defines.h>
 
+//#include "simulate.h"
+
 /**
  * Fixedwing attitude control app start / stop handling function
  *
@@ -167,6 +169,8 @@ private:
 	float _flaps_cmd_last;
 	float _flaperons_cmd_last;
 
+//    uint32_t sim_num;
+//    uint8_t sim_i;
 
 	struct {
 		float p_tc;
@@ -407,6 +411,8 @@ FixedwingAttitudeControl::FixedwingAttitudeControl() :
 	_vehicle_status = {};
 	_vehicle_land_detected = {};
 
+//    sim_num = 0;
+//    sim_i = 0;
 
 	_parameter_handles.p_tc = param_find("FW_P_TC");
 	_parameter_handles.p_p = param_find("FW_PR_P");
@@ -1167,17 +1173,38 @@ FixedwingAttitudeControl::task_main()
 
 			} else {
 				/* manual/direct control */
-				_actuators.control[actuator_controls_s::INDEX_ROLL] = _manual.y * _parameters.man_roll_scale + _parameters.trim_roll;
-				_actuators.control[actuator_controls_s::INDEX_PITCH] = -_manual.x * _parameters.man_pitch_scale +
-						_parameters.trim_pitch;
-				_actuators.control[actuator_controls_s::INDEX_YAW] = _manual.r * _parameters.man_yaw_scale + _parameters.trim_yaw;
-				_actuators.control[actuator_controls_s::INDEX_THROTTLE] = _manual.z;
+                _actuators.control[actuator_controls_s::INDEX_ROLL] = _manual.y * _parameters.man_roll_scale + _parameters.trim_roll;
+                _actuators.control[actuator_controls_s::INDEX_PITCH] = -_manual.x * _parameters.man_pitch_scale + _parameters.trim_pitch;
+                _actuators.control[actuator_controls_s::INDEX_YAW] = _manual.r * _parameters.man_yaw_scale + _parameters.trim_yaw;
+                _actuators.control[actuator_controls_s::INDEX_THROTTLE] = _manual.z;
+//                if(_manual.kill_switch == manual_control_setpoint_s::SWITCH_POS_ON)
+//                {
+//                    if(sim_num>=2500)
+//                        sim_num = 0;
+//                    if(sim_i++ >= 4)
+//                    {
+//                        sim_num++;
+//                        sim_i = 0;
+//                    }
+//                    _actuators.control[actuator_controls_s::INDEX_ROLL] = _manual.y * _parameters.man_roll_scale + _parameters.trim_roll;
+//                    _actuators.control[actuator_controls_s::INDEX_PITCH] = den_data[sim_num] * 0.3;//-_manual.x * _parameters.man_pitch_scale + _parameters.trim_pitch;
+//                    _actuators.control[actuator_controls_s::INDEX_YAW] = _manual.r * _parameters.man_yaw_scale + _parameters.trim_yaw;
+//                    _actuators.control[actuator_controls_s::INDEX_THROTTLE] = _manual.z;
+//                }else{
+//                    _actuators.control[actuator_controls_s::INDEX_ROLL] = _manual.y * _parameters.man_roll_scale + _parameters.trim_roll;
+//                    _actuators.control[actuator_controls_s::INDEX_PITCH] = -_manual.x * _parameters.man_pitch_scale + _parameters.trim_pitch;
+//                    _actuators.control[actuator_controls_s::INDEX_YAW] = _manual.r * _parameters.man_yaw_scale + _parameters.trim_yaw;
+//                    _actuators.control[actuator_controls_s::INDEX_THROTTLE] = _manual.z;
+
+//                    sim_num = 0;
+//                    sim_i = 0;
+//                }
 			}
 
 			_actuators.control[actuator_controls_s::INDEX_FLAPS] = flaps_applied;
 			_actuators.control[5] = _manual.aux1;
 			_actuators.control[actuator_controls_s::INDEX_AIRBRAKES] = flaperon_applied;
-			_actuators.control[7] = _manual.aux3;
+            _actuators.control[7] = _manual.aux3;
 
 			/* lazily publish the setpoint only once available */
 			_actuators.timestamp = hrt_absolute_time();

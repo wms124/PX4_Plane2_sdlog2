@@ -103,6 +103,7 @@
 #include <DevMgr.hpp>
 
 #include "sensors_init.h"
+#include "simulate.h"
 
 using namespace DriverFramework;
 
@@ -275,6 +276,9 @@ private:
 
 	hrt_abstime _vibration_warning_timestamp;
 	bool _vibration_warning;
+
+    uint32_t sim_num;
+    uint8_t sim_i;
 
 	struct {
 		float min[_rc_max_chan_count];
@@ -599,6 +603,9 @@ Sensors::Sensors() :
 	_vibration_warning(false)
 {
 	_mag.voter.set_timeout(300000);
+
+    sim_num = 0;
+    sim_i = 0;
 
 	memset(&_rc, 0, sizeof(_rc));
 	memset(&_diff_pres, 0, sizeof(_diff_pres));
@@ -1959,6 +1966,9 @@ Sensors::rc_poll()
 		/* read low-level values from FMU or IO RC inputs (PPM, Spektrum, S.Bus) */
 		struct rc_input_values rc_input;
 
+        /* initialize manual setpoint */
+        struct manual_control_setpoint_s manual = {};
+
 		orb_copy(ORB_ID(input_rc), _rc_sub, &rc_input);
 
 		/* detect RC signal loss */
@@ -2053,6 +2063,28 @@ Sensors::rc_poll()
 		_rc.timestamp = rc_input.timestamp_last_signal;
 		_rc.frame_drop_count = rc_input.rc_lost_frame_count;
 
+        //DST debug: change rc_channels_s channel[] value for simulate
+        manual.kill_switch = get_rc_sw2pos_position(rc_channels_s::RC_CHANNELS_FUNCTION_KILLSWITCH,
+                     _parameters.rc_killswitch_th, _parameters.rc_killswitch_inv);
+
+        if(manual.kill_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
+            if(sim_num>=2500)
+                sim_num = 0;
+//            if(sim_i++ >= 4)
+//            {
+//                sim_num++;
+//                sim_i = 0;
+//            }
+             //Be careful! _rc.channels[2] is thr
+//          _rc.channels[0] = den_data[sim_num++];//_rc.channels[0] fuyi 0.3ok 1.0ok
+            _rc.channels[1] = den_data[sim_num++];//_rc.channels[1]
+//            _rc.channels[2] = den_data[sim_num++];//_rc.channels[2] thr 1.0ok
+            //_rc.channels[3] = den_data[sim_num++];//_rc.channels[3] yaw 0.3ok 1.0ok
+        } else {
+            sim_num = 0;
+            sim_i = 0;
+        }
+
 		/* publish rc_channels topic even if signal is invalid, for debug */
 		if (_rc_pub != nullptr) {
 			orb_publish(ORB_ID(rc_channels), _rc_pub, &_rc);
@@ -2064,8 +2096,8 @@ Sensors::rc_poll()
 		/* only publish manual control if the signal is still present */
 		if (!signal_lost) {
 
-			/* initialize manual setpoint */
-			struct manual_control_setpoint_s manual = {};
+//			/* initialize manual setpoint */
+//			struct manual_control_setpoint_s manual = {};
 			/* set mode slot to unassigned */
 			manual.mode_slot = manual_control_setpoint_s::MODE_SLOT_NONE;
 			/* set the timestamp to the last signal time */
@@ -2077,7 +2109,8 @@ Sensors::rc_poll()
 			manual.r = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_YAW, -1.0, 1.0);
 			manual.z = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_THROTTLE, 0.0, 1.0);
 			manual.flaps = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_FLAPS, -1.0, 1.0);
-			manual.aux1 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_1, -1.0, 1.0);
+            //DST: change aux1 channel use to sw3pos
+            //manual.aux1 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_1, -1.0, 1.0);
 			manual.aux2 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_2, -1.0, 1.0);
 			manual.aux3 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_3, -1.0, 1.0);
 			manual.aux4 = get_rc_value(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_4, -1.0, 1.0);
@@ -2126,10 +2159,13 @@ Sensors::rc_poll()
 					     _parameters.rc_acro_inv);
 			manual.offboard_switch = get_rc_sw2pos_position(rc_channels_s::RC_CHANNELS_FUNCTION_OFFBOARD,
 						 _parameters.rc_offboard_th, _parameters.rc_offboard_inv);
-			manual.kill_switch = get_rc_sw2pos_position(rc_channels_s::RC_CHANNELS_FUNCTION_KILLSWITCH,
-					     _parameters.rc_killswitch_th, _parameters.rc_killswitch_inv);
+//			manual.kill_switch = get_rc_sw2pos_position(rc_channels_s::RC_CHANNELS_FUNCTION_KILLSWITCH,
+//					     _parameters.rc_killswitch_th, _parameters.rc_killswitch_inv);
 			manual.transition_switch = get_rc_sw2pos_position(rc_channels_s::RC_CHANNELS_FUNCTION_TRANSITION,
 						   _parameters.rc_trans_th, _parameters.rc_trans_inv);
+
+//            manual.aux1 = get_rc_sw3pos_position(rc_channels_s::RC_CHANNELS_FUNCTION_AUX_1, _parameters.rc_auto_th,
+//                          _parameters.rc_auto_inv, _parameters.rc_assist_th, _parameters.rc_assist_inv);
 
 			/* publish manual_control_setpoint topic */
 			if (_manual_control_pub != nullptr) {

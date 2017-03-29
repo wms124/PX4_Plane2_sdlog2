@@ -2512,18 +2512,23 @@ int commander_thread_main(int argc, char *argv[])
 				mavlink_log_critical(&mavlink_log_pub, "main state transition denied");
 			}
 
-			/* check throttle kill switch */
+            /* DST debug: kill switch --> rc auto stimulate switch */
 			if (sp_man.kill_switch == manual_control_setpoint_s::SWITCH_POS_ON) {
-				/* set lockdown flag */
-				if (!armed.lockdown) {
-					mavlink_log_emergency(&mavlink_log_pub, "MANUAL KILL SWITCH ENGAGED");
-				}
-				armed.lockdown = true;
+                /* set lockdown flag */
+//                if (!armed.lockdown) {
+//                    mavlink_log_emergency(&mavlink_log_pub, "MANUAL KILL SWITCH ENGAGED");
+//                }
+//                armed.lockdown = true;
+
+                //mavlink_log_emergency(&mavlink_log_pub, "Auto stimulate SWITCH start!!!");
+
 			} else if (sp_man.kill_switch == manual_control_setpoint_s::SWITCH_POS_OFF) {
-				if (armed.lockdown) {
-					mavlink_log_emergency(&mavlink_log_pub, "MANUAL KILL SWITCH OFF");
-				}
-				armed.lockdown = false;
+//                if (armed.lockdown) {
+//                    mavlink_log_emergency(&mavlink_log_pub, "MANUAL KILL SWITCH OFF");
+//                }
+//                armed.lockdown = false;
+
+                //mavlink_log_emergency(&mavlink_log_pub, "Auto stimulate SWITCH stop!!!");
 			}
 			/* no else case: do not change lockdown flag in unconfigured case */
 

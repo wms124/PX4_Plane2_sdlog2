@@ -1091,31 +1091,38 @@ int preflight_check(struct vehicle_status_s *status, orb_advert_t *mavlink_log_p
 
 	bool checkAirspeed = false;
 
+    //************dstone debug:************************
 	/* Perform airspeed check only if circuit breaker is not
-	 * engaged and it's not a rotary wing */
-	if (!status_flags->circuit_breaker_engaged_airspd_check && (!status->is_rotary_wing || status->is_vtol)) {
-		checkAirspeed = true;
-	}
+     * engaged and it's not a rotary wing */
+    if (!status_flags->circuit_breaker_engaged_airspd_check && (!status->is_rotary_wing || status->is_vtol)) {
+        checkAirspeed = true;
+    }
 
-	bool preflight_ok = Commander::preflightCheck(mavlink_log_pub, true, true, true, true,
-			    checkAirspeed, (status->rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT),
-			    !can_arm_without_gps, true, reportFailures);
+    bool preflight_ok = Commander::preflightCheck(mavlink_log_pub, true, true, true, true,
+                checkAirspeed, (status->rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT),
+                !can_arm_without_gps, true, reportFailures);
 
-	if (!status_flags->circuit_breaker_engaged_usb_check && status_flags->usb_connected && prearm) {
-		preflight_ok = false;
+    //************dstone debug:************************
+    //For debug: cancel all of the preflight check. be careful!!! This is not safety!!!
+//    bool preflight_ok = Commander::preflightCheck(mavlink_log_pub, false, false, false, true,
+//                checkAirspeed, (status->rc_input_mode == vehicle_status_s::RC_IN_MODE_DEFAULT),
+//                !can_arm_without_gps, true, reportFailures);
 
-		if (reportFailures) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "ARMING DENIED: Flying with USB is not safe");
-		}
-	}
+    if (!status_flags->circuit_breaker_engaged_usb_check && status_flags->usb_connected && prearm) {
+        preflight_ok = false;
 
-	if (battery->warning == battery_status_s::BATTERY_WARNING_CRITICAL) {
-		preflight_ok = false;
+        if (reportFailures) {
+            mavlink_and_console_log_critical(mavlink_log_pub, "ARMING DENIED: Flying with USB is not safe");
+        }
+    }
 
-		if (reportFailures) {
-			mavlink_and_console_log_critical(mavlink_log_pub, "ARMING DENIED: VERY LOW BATTERY");
-		}
-	}
+    if (battery->warning == battery_status_s::BATTERY_WARNING_CRITICAL) {
+        preflight_ok = false;
+
+        if (reportFailures) {
+            mavlink_and_console_log_critical(mavlink_log_pub, "ARMING DENIED: VERY LOW BATTERY");
+        }
+    }
 
 	/* report once, then set the flag */
 	if (reportFailures && !preflight_ok) {
